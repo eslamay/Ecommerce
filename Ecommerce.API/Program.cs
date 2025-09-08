@@ -14,6 +14,10 @@ namespace Ecommerce.API
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
 			builder.Services.InfastructureConfiguration(builder.Configuration);
+			builder.Services.AddAutoMapper(cfg =>
+			{
+				cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies());
+			});
 
 			var app = builder.Build();
 

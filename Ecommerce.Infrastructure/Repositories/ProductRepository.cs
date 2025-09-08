@@ -1,13 +1,91 @@
-﻿using Ecommerce.Core.Entities.Product;
+﻿using AutoMapper;
+using Ecommerce.Core.DTO;
+using Ecommerce.Core.Entities.Product;
 using Ecommerce.Core.Interfaces;
+using Ecommerce.Core.Services;
 using Ecommerce.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Ecommerce.Infrastructure.Repositories
 {
 	public class ProductRepository : GenricRepository<Product>, IProductRepository
 	{
-		public ProductRepository(AppDbContext dbContext) : base(dbContext)
+		private readonly AppDbContext dbContext;
+		private readonly IMapper mapper;
+		private readonly IImageManagementService imageManagementService;
+
+		public ProductRepository(AppDbContext dbContext,IMapper mapper,IImageManagementService imageManagementService)
+			: base(dbContext)
 		{
+			this.dbContext = dbContext;
+			this.mapper = mapper;
+			this.imageManagementService = imageManagementService;
+		}
+
+		public async Task<bool> AddAsync(AddProductDTO addProductDTO)
+		{
+			if (addProductDTO == null) return false;
+
+			var product = mapper.Map<Product>(addProductDTO);
+			await dbContext.Products.AddAsync(product);
+			await dbContext.SaveChangesAsync();
+
+			var ImagesPath= await imageManagementService.AddImageAsync(addProductDTO.Photos, addProductDTO.Name);
+			var photos = ImagesPath.Select(
+				path => new Photo
+				{
+					ProductId = product.Id,
+					ImageName = path 
+				}).ToList();
+
+			await dbContext.Photos.AddRangeAsync(photos);
+			await dbContext.SaveChangesAsync();
+			return true;
+		}
+
+		public async Task<bool> UpdateAsync(UpdateProductDTO updateProductDTO)
+		{
+			if (updateProductDTO == null) return false;
+
+			var FoundProduct =await dbContext.Products.Include(x => x.Photos).Include(x => x.Category)
+				              .FirstOrDefaultAsync(x => x.Id == updateProductDTO.Id);
+
+			if (FoundProduct == null) return false;
+
+			mapper.Map(updateProductDTO, FoundProduct);
+
+			var FoundPhotos = await dbContext.Photos.Where(x => x.ProductId == updateProductDTO.Id).ToListAsync();
+			foreach (var photo in FoundPhotos)
+			{
+				 imageManagementService.DeleteImageAsync(photo.ImageName);
+			}
+
+			dbContext.Photos.RemoveRange(FoundPhotos);
+
+			var ImagesPath = await imageManagementService.AddImageAsync(updateProductDTO.Photos, updateProductDTO.Name);
+			var photos = ImagesPath.Select(
+				path => new Photo
+				{
+					ProductId = updateProductDTO.Id,
+					ImageName = path
+				}).ToList();
+
+			await dbContext.Photos.AddRangeAsync(photos);
+			await dbContext.SaveChangesAsync();
+			return true;
+
+		}
+		public Task DeleteAsync(Product product)
+		{
+			var Photos =  dbContext.Photos.Where(x => x.ProductId == product.Id).ToList();
+			foreach (var photo in Photos)
+			{
+				imageManagementService.DeleteImageAsync(photo.ImageName);
+			}
+
+			dbContext.Products.Remove(product);
+			return dbContext.SaveChangesAsync();
 		}
 	}
 }
