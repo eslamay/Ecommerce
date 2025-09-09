@@ -63,6 +63,11 @@ namespace Ecommerce.Infrastructure.Repositories
 			var entity = await dbContext.Set<T>().FindAsync(id);
 			dbContext.Set<T>().Remove(entity);
 			await dbContext.SaveChangesAsync();
-		}	
+		}
+
+		public async Task<int> CountAsync()
+		{
+           return await dbContext.Set<T>().CountAsync();
+		}
 	}
 }

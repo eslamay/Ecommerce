@@ -20,6 +20,19 @@ namespace Ecommerce.API
 				cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies());
 			});
 
+			// CORS configuration
+			builder.Services.AddCors(options =>
+			{
+				options.AddPolicy("CORSPolicy",
+				builder =>
+				{
+					builder.WithOrigins("http://localhost:4200", "https://localhost:4200")
+						   .AllowAnyHeader()
+						   .AllowAnyMethod()
+						   .AllowCredentials();
+				});
+			});
+
 			var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
@@ -28,6 +41,9 @@ namespace Ecommerce.API
 				app.UseSwagger();
 				app.UseSwaggerUI();
 			}
+
+			// Enable CORS
+			app.UseCors("CORSPolicy");
 
 			app.UseMiddleware<ExceptionsMiddleware>();
 
