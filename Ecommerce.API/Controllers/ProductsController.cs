@@ -24,8 +24,8 @@ namespace Ecommerce.API.Controllers
 			{
 				var products = await work.ProductRepository.GetAllAsync(productParams);
 				if (products == null) return NotFound(new ResponseAPI(404, "No products found"));
-				var totalProducts = await work.ProductRepository.CountAsync();
-				return Ok(new Pagination<ProductDTO>(productParams.PageNumber, productParams.pageSize, totalProducts,products));
+				
+				return Ok(new Pagination<ProductDTO>(productParams.PageNumber, productParams.pageSize, products.TotalCount,products.Products));
 			}
 			catch (Exception ex)
 			{

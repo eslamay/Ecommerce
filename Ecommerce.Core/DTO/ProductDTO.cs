@@ -5,6 +5,7 @@ namespace Ecommerce.Core.DTO
 {
 	public record ProductDTO
 	{
+		public int Id { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
 		public decimal NewPrice { get; set; }
@@ -12,6 +13,12 @@ namespace Ecommerce.Core.DTO
 
 		public virtual List<PhotoDTO> Photos { get; set; }
 		public string CategoryName { get; set; }
+	}
+
+	public record ReturnProductDTO
+	{
+		public List<ProductDTO> Products { get; set; }
+		public int TotalCount { get; set; }
 	}
 
 	public record AddProductDTO

@@ -14,8 +14,8 @@ namespace Ecommerce.Core.Sharing
 		public int TotatlCount { get; set; }
 
 		public string? Search { get; set; }
-		public int MaxPageSize { get; set; } = 6;
-		private int _pageSize = 4;
+		public int MaxPageSize { get; set; } = 12;
+		private int _pageSize = 6;
 
 		public int pageSize
 		{

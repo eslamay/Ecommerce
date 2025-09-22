@@ -24,7 +24,7 @@ namespace Ecommerce.Infrastructure.Repositories
 			this.imageManagementService = imageManagementService;
 		}
 
-		public async Task<IEnumerable<ProductDTO>> GetAllAsync(ProductParams productParams)
+		public async Task<ReturnProductDTO> GetAllAsync(ProductParams productParams)
 		{
 			var query = dbContext.Products.Include(x => x.Photos).Include(x => x.Category).AsNoTracking();
 
@@ -48,17 +48,19 @@ namespace Ecommerce.Infrastructure.Repositories
 			{
 				query = productParams.Sort switch
 				{
-					"Price" => query.OrderBy(x => x.NewPrice),
+					"PriceAsn" => query.OrderBy(x => x.NewPrice),
 					"PriceDesc" => query.OrderByDescending(x => x.NewPrice),
 					_ => query.OrderBy(x => x.Id),
 				};
 			}
 
+			ReturnProductDTO returnProductDTO = new ReturnProductDTO();
+			returnProductDTO.TotalCount= query.Count();
 			query = query.Skip((productParams.PageNumber - 1) * productParams.pageSize).Take(productParams.pageSize);
 
-		    var result = mapper.Map<List<ProductDTO>>(query);
+		    returnProductDTO.Products = mapper.Map<List<ProductDTO>>(query);
 
-			return result;
+			return returnProductDTO;
 		}
 
 		public async Task<bool> AddAsync(AddProductDTO addProductDTO)

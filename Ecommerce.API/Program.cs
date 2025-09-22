@@ -1,5 +1,6 @@
 using Ecommerce.API.Middleware;
 using Ecommerce.Infrastructure;
+using Microsoft.OpenApi.Models;
 namespace Ecommerce.API
 {
 	public class Program
@@ -11,6 +12,27 @@ namespace Ecommerce.API
 			// Add services to the container.
 			builder.Services.AddMemoryCache();
 			builder.Services.AddControllers();
+			builder.Services.AddSwaggerGen(
+			   c =>
+			   {
+				   c.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
+				   {
+					   Type = SecuritySchemeType.Http,
+					   Scheme = "bearer",
+				   });
+
+				   c.AddSecurityRequirement(new OpenApiSecurityRequirement
+				   {
+					   {
+						 new OpenApiSecurityScheme
+							{
+								Reference = new OpenApiReference{ Type = ReferenceType.SecurityScheme, Id = "bearerAuth" }
+							},
+							[]
+					   }
+				   });
+			   }
+			   );
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
@@ -46,13 +68,16 @@ namespace Ecommerce.API
 			app.UseCors("CORSPolicy");
 
 			app.UseMiddleware<ExceptionsMiddleware>();
+			
+			app.UseAuthentication();
+
+			app.UseAuthorization();
 
 			app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
 			app.UseHttpsRedirection();
-
-			app.UseAuthorization();
-
+			
+			app.UseStaticFiles();
 
 			app.MapControllers();
 
