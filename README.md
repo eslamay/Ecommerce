@@ -1,4 +1,4 @@
-# 🛒 E-Commerce API (ASP.NET Core)
+# 🛒 E-Commerce API (.NET Core)
 
 ## 📌 Overview
 This project is a **Back-End E-Commerce API** built with **.NET Core 8** and **Entity Framework Core**.  
